@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from loguru import logger
 from starlette.middleware.cors import CORSMiddleware
 
+from routing.v1.ml import router as ml_router
+
 from configs.Environment import get_environment_variables
 
 
@@ -23,3 +25,5 @@ env = get_environment_variables()
 if not env.DEBUG:
     logger.remove()
     logger.add(sys.stdout, level="INFO")
+
+app.include_router(ml_router)
