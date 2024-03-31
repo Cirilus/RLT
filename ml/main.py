@@ -27,8 +27,8 @@ logger.debug("loading models")
 emb_tokenizer, emb_model = load_models(MODEL_EMB_NAME, device=DEVICE)
 
 logger.debug("loading csv files")
-df223 = pd.read_csv("223.csv")
-df44 = pd.read_csv("44.csv")
+df223 = pd.read_csv("ml/223.csv")
+df44 = pd.read_csv("ml/44.csv")
 df = pd.concat([df223, df44])
 loader = DataFrameLoader(df, page_content_column='article_text')
 documents = loader.load()
@@ -51,7 +51,7 @@ answer = list(data.ANSWER)
 
 logger.debug("loading search model")
 search_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
-with open('model.pkl', 'rb') as f:
+with open('ml/model.pkl', 'rb') as f:
     embeddings_search = pkl.load(f)
 
 logger.debug("loading Annoy Index")
