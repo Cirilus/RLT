@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "rlc-back"
+version = "0.1.0"
+description = ""
+authors = ["kirill <shkolenko02-03-2004@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = {extras = ["all"], version = "^0.103.0"}
+alembic = "^1.11.3"
+loguru = "^0.7.0"
+pytest = "^7.4.0"
+chromadb = "^0.4.24"
+sentence-transformers = "^2.6.1"
+ultralytics = "^8.1.38"
+langchain-community = "^0.0.29"
+langchain = "^0.1.13"
+accelerate = "^0.28.0"
+annoy = "^1.17.3"
+transformers = "^4.39.2"
+torch = "^2.2.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
