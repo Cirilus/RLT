@@ -172,8 +172,6 @@ def question_response(embeddings, question, emb_tokenizer,
         embeddings = torch.tensor(embeddings)
         correct_hits = util.semantic_search(question_embedding, embeddings, top_k=top_k_hits)[0]
         correct_hits_ids = list([hit['corpus_id'] for hit in correct_hits])
-        with open('user_questions.txt', 'a') as f:
-            f.write(f"Вопрос пользователя: {question}\n")
         result_answer = answer[correct_hits_ids[0]]
 
     if result_answer is None:
