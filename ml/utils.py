@@ -156,7 +156,7 @@ def get_answer(question: str, tokenizer, model, device, collection, chatbot):
 
 def question_response(embeddings, question, emb_tokenizer,
                       emb_model, device, collection, chatbot,
-                      search_model, anny_index, answer):
+                      search_model, annoy_index, answer):
     top_k_hits = 5
     question_embedding = search_model.encode(question)
     corpus_ids, scores = annoy_index.get_nns_by_vector(question_embedding, top_k_hits, include_distances=True)
