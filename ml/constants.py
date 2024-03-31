@@ -1,5 +1,5 @@
 MODEL_EMB_NAME = "intfloat/multilingual-e5-large-instruct"
-DEVICE = "cpu"
+DEVICE = "cuda"
 MODEL_CHAT_NAME = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 SYSTEM_PROMPT = """
 INSTRUCT:
