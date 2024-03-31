@@ -59,5 +59,8 @@ annoy_index = AnnoyIndex(len(embeddings_search[1]), 'angular')
 annoy_index.load('Annoy_index')
 
 logger.debug("creating response")
+
+
+
 print(question_response(embeddings_search, "Какие штрафы предусмотрены за неисполнение контракта в 44-ФЗ?",
                         emb_tokenizer, emb_model, DEVICE, collection, chatbot, search_model, annoy_index, answer))
