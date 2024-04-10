@@ -6,7 +6,7 @@ from ml.main import embeddings_search, emb_tokenizer, emb_model, chatbot, search
 from ml.utils import question_response
 from schemas.ml import GetAnswerResponse
 
-router = APIRouter(prefix="/api/v1/ml", tags=["company"])
+router = APIRouter(prefix="/api/v1/ml", tags=["ml"])
 
 
 @router.get(
@@ -19,4 +19,6 @@ async def get_answer(question: str):
                                  emb_tokenizer, emb_model, DEVICE, collection, chatbot, search_model, annoy_index,
                                  answer)
 
-    return response
+    return {
+        "answer": response
+    }

@@ -45,7 +45,7 @@ logger.debug("loading chat bot")
 chatbot = load_chatbot(MODEL_CHAT_NAME, device="cuda")
 
 logger.debug("reading QAdata")
-data = pd.read_csv('QAdata')
+data = pd.read_csv('ml/QAdata')
 question = list(data.QUESTION)
 answer = list(data.ANSWER)
 
@@ -56,11 +56,6 @@ with open('ml/model.pkl', 'rb') as f:
 
 logger.debug("loading Annoy Index")
 annoy_index = AnnoyIndex(len(embeddings_search[1]), 'angular')
-annoy_index.load('Annoy_index')
+annoy_index.load('ml/Annoy_index')
 
 logger.debug("creating response")
-
-
-
-print(question_response(embeddings_search, "Какие штрафы предусмотрены за неисполнение контракта в 44-ФЗ?",
-                        emb_tokenizer, emb_model, DEVICE, collection, chatbot, search_model, annoy_index, answer))
