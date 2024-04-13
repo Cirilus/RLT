@@ -21,6 +21,7 @@ annoy = "^1.17.3"
 transformers = "^4.39.2"
 torch = "^2.2.2"
 psycopg2 = {extras = ["binary"], version = "^2.9.9"}
+llama-cpp-python = "^0.2.61"
 
 
 [build-system]
