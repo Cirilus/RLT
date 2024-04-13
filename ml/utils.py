@@ -20,7 +20,19 @@ ROLE_TOKENS = {
     "bot": BOT_TOKEN,
     "system": SYSTEM_TOKEN
 }
+def get_message_tokens(model, role, content):
+    content = f"{role}\n{content}\n</s>"
+    content = content.encode("utf-8")
+    message_tokens = model.tokenize(content, special=True)
+    return message_tokens
 
+
+def get_system_tokens(model):
+    system_message = {
+        "role": "system",
+        "content": SYSTEM_PROMPT
+    }
+    return get_message_tokens(model, **system_message)
 
 def load_models(model: str, device: str = "cpu", torch_dtype: str = "auto") -> tuple:
     tokenizer = AutoTokenizer.from_pretrained(model, device_map=device, torch_dtype=torch_dtype)
