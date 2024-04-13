@@ -117,8 +117,8 @@ def load_chatbot(model: str, device: str = "cuda", torch_dtype: str = "auto"):
     # Загружаем чатбот с помощью pipeline из библиотеки transformers
     model = Llama(
         model_path=model,
-        n_ctx=2000,
-        n_gpu_layers=-1
+        n_ctx=4096,
+        n_gpu_layers=-1,
         n_parts=1,
     )
     return model
@@ -143,7 +143,7 @@ def generate_answer(
     n_ctx=4096,
     top_k=30,
     top_p=0.9,
-    temperature=0.2,
+    temperature=0.3,
     repeat_penalty=1.1
 ):
 
