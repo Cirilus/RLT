@@ -118,6 +118,7 @@ def load_chatbot(model: str, device: str = "cuda", torch_dtype: str = "auto"):
     model = Llama(
         model_path=model,
         n_ctx=2000,
+        n_gpu_layers=-1
         n_parts=1,
     )
     return model
@@ -139,7 +140,7 @@ def append_documents_to_conversation(conversation, texts):
 def generate_answer(
     model,
     user_prompt,
-    n_ctx=2000,
+    n_ctx=4096,
     top_k=30,
     top_p=0.9,
     temperature=0.2,
