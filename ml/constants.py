@@ -1,6 +1,6 @@
 MODEL_EMB_NAME = "intfloat/multilingual-e5-large-instruct"
 DEVICE = "cuda"
-MODEL_CHAT_NAME = "RLT/model-q8_0.gguf"
+MODEL_CHAT_NAME = "ml/model-q8_0.gguf"
 SYSTEM_PROMPT = "Ты — Ассистент для Мегафон, ты отвечаешь на их вопросы и помогаешь им."
 
 
