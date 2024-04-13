@@ -6,9 +6,20 @@ import torch
 import torch.nn.functional as F
 from sentence_transformers import util
 from transformers import AutoModel, AutoTokenizer, Conversation, pipeline
-
+from llama_cpp import Llama
 from ml.chroma import collection
 from ml.constants import SYSTEM_PROMPT
+
+SYSTEM_TOKEN = 1587
+USER_TOKEN = 2188
+BOT_TOKEN = 12435
+LINEBREAK_TOKEN = 13
+
+ROLE_TOKENS = {
+    "user": USER_TOKEN,
+    "bot": BOT_TOKEN,
+    "system": SYSTEM_TOKEN
+}
 
 
 def load_models(model: str, device: str = "cpu", torch_dtype: str = "auto") -> tuple:
@@ -92,14 +103,12 @@ def encodeQuestion(question, tokenizer, model, device, collection):
 
 def load_chatbot(model: str, device: str = "cuda", torch_dtype: str = "auto"):
     # Загружаем чатбот с помощью pipeline из библиотеки transformers
-    chatbot = pipeline(
-        model=model,
-        trust_remote_code=True,
-        torch_dtype=torch_dtype,
-        device_map=device,
-        task="conversational",
+    model = Llama(
+        model_path=model,
+        n_ctx=2000,
+        n_parts=1,
     )
-    return chatbot
+    return model
 
 
 def append_documents_to_conversation(conversation, texts):
@@ -116,42 +125,62 @@ def append_documents_to_conversation(conversation, texts):
 
 
 def generate_answer(
-        chatbot,
-        conversation: Conversation,
-        max_new_tokens: int = 128,
-        temperature=0.9,
-        top_k: int = 50,
-        top_p: float = 0.95,
-        repetition_penalty: float = 2.0,
-        do_sample: bool = True,
-        num_beams: int = 2,
-        early_stopping: bool = True,
-) -> str:
-    # Генерируем ответ от чатбота
-    conversation = chatbot(
-        conversation,
-        max_new_tokens=max_new_tokens,
-        temperature=temperature,
+    model,
+    user_prompt,
+    n_ctx=2000,
+    top_k=30,
+    top_p=0.9,
+    temperature=0.2,
+    repeat_penalty=1.1
+):
+
+    system_tokens = get_system_tokens(model)
+    tokens = system_tokens
+    model.eval(tokens)
+
+    message_tokens = get_message_tokens(model=model, role="user", content=user_prompt)
+    token_str = ""
+    role_tokens = [model.token_bos(), BOT_TOKEN, LINEBREAK_TOKEN]
+    tokens += message_tokens + role_tokens
+    generator = model.generate(
+        tokens,
         top_k=top_k,
         top_p=top_p,
-        repetition_penalty=repetition_penalty,
-        do_sample=do_sample,
-        num_beams=num_beams,
-        early_stopping=early_stopping,
+        temp=temperature,
+        repeat_penalty=repeat_penalty
     )
+    for token in generator:
+        token_str += model.detokenize([token]).decode("utf-8", errors="ignore")
+        tokens.append(token)
+        if token == model.token_eos():
+            break
+    return token_str
 
-    return conversation
 
+def get_answer(question: str,  tokenizer, model, device, collection, chatbot):
+  answers = encodeQuestion(question, tokenizer, model, device, collection)
+  answer =  [i['answer'] for i in answers]
+  article_name = answers[0]['article_name']
+  rule_name = answers[0]['rule_name']
+  metric = answers[0]['metric']
+  USER_PROMPT = f"""Я даю тебе вход плохо структурированный текст, используй его для ответа на мой вопрос, 
+  текст может быть бесполезный, поэтому только используй его как подсказку. 
+  Текст: {answers}
+  Вопрос: {question}"""
+  output = generate_answer(chatbot, USER_PROMPT)
+  return output, article_name, rule_name, metric
 
-def get_answer(question: str, tokenizer, model, device, collection, chatbot):
-    conversation = Conversation()
-    conversation.add_message({"role": "system", "content": SYSTEM_PROMPT})
-    answers = encodeQuestion(question, tokenizer, model, device, collection)
-    answer = [i['answer'] for i in answers]
-    conversation = append_documents_to_conversation(conversation, answer)
-    conversation.add_message({"role": "user", "content": question})
-    output = generate_answer(chatbot, conversation, temperature=0.9)
-    return output[-1]["content"]
+def get_answer_smart(question: str, result_answer, tokenizer, model, device, collection, chatbot):
+  answers = encodeQuestion(question, tokenizer, model, device, collection)
+  answer =  [i['answer'] for i in answers]
+  article_name = answers[0]['article_name']
+  rule_name = answers[0]['rule_name']
+  USER_PROMPT = f"""Я даю тебе вход плохо структурированный текст, используй его для ответа на мой вопрос, 
+  текст может быть бесполезный, поэтому только используй его как подсказку. 
+  Текст: {result_answer}
+  Вопрос: {question}"""
+  output = generate_answer(chatbot, USER_PROMPT)
+  return output, article_name, rule_name
 
 
 def question_response(embeddings, question, emb_tokenizer,
@@ -172,9 +201,13 @@ def question_response(embeddings, question, emb_tokenizer,
         embeddings = torch.tensor(embeddings)
         correct_hits = util.semantic_search(question_embedding, embeddings, top_k=top_k_hits)[0]
         correct_hits_ids = list([hit['corpus_id'] for hit in correct_hits])
+        with open('user_questions.txt', 'a') as f:
+            f.write(f"Вопрос пользователя: {question}\n")
         result_answer = answer[correct_hits_ids[0]]
-
+        metric = hits_above_threshold[0]['score']*100
+        result_answer, article_name, rule_name = get_answer_smart(question, result_answer, emb_tokenizer, emb_model, device, collection, chatbot)
+        print('asdf')
+        return  result_answer, article_name, rule_name, f"{metric:.2f}"
     if result_answer is None:
-        result_answer = get_answer(question, emb_tokenizer, emb_model, device, collection, chatbot)
-
-    return result_answer
+        result_answer, article_name, rule_name, metric = get_answer(question, emb_tokenizer, emb_model, device, collection, chatbot)
+        return  result_answer, article_name, rule_name, f"{metric:.2f}"
