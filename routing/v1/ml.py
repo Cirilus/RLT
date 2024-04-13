@@ -20,7 +20,7 @@ async def get_answer(question: str):
                                  answer)
 
     return {
-        "answer" : result_answer,
+        "result_answer" : result_answer,
         "article_name" : article_name,
         "rule_name" : rule_name,
         "metric" : metric
