@@ -15,10 +15,13 @@ router = APIRouter(prefix="/api/v1/ml", tags=["ml"])
     response_model=GetAnswerResponse,
 )
 async def get_answer(question: str):
-    response = question_response(embeddings_search, question,
+    result_answer, article_name, rule_name, metric = question_response(embeddings_search, question,
                                  emb_tokenizer, emb_model, DEVICE, collection, chatbot, search_model, annoy_index,
                                  answer)
 
     return {
-        "answer": response
+        "answer" : result_answer,
+        "article_name" : article_name,
+        "rule_name" : rule_name,
+        "metric" : metric
     }
